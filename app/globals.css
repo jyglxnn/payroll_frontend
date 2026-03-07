@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@theme {
+  --font-sans: var(--font-lato), sans-serif;
+}
+
 @layer base {
   body {
     @apply w-full min-h-screen bg-gray-100 text-black;

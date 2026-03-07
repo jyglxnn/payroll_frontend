@@ -4,7 +4,6 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 
 const lato = Lato ({
-  variable: "--font-lato",
   weight: ['100', '300', '400', '700', '900'],
   subsets: ["latin"],
 });
@@ -23,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${lato.variable} font-sans antialiased`}
+        className={`${lato.className} antialiased`}
       >
         <Navbar />
         

@@ -4,7 +4,7 @@ import { ButtonHTMLAttributes, ReactNode } from "react"
 
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: "solid" | "outline";
+    variant?: "solid" | "outline" | "ghost";
     children: ReactNode;
 }
 

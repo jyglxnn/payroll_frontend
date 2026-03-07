@@ -97,7 +97,7 @@ export default function RulesPage() {
                                     <div><span className=""> / {salary.base?.replace('ly', '')}</span></div>
                                 </div>
 
-                                <Link href={`/rules/edit/${salary.id}`}>
+                                <Link href={`/rules/salary/edit/${salary.id}`}>
                                     <Edit className="mx-4"/>
                                 </Link>
                             </div>
@@ -134,7 +134,9 @@ export default function RulesPage() {
                                     <div className="font-black text-red-700 text-lg">-₱{deduc.amount.toLocaleString()}</div>
                                     <div><span className="text-[12px] uppercase text-muted-foreground font-black tracking-tighter"> {deduc.method} </span></div>
                                 </div>
-                                <Edit className="mx-4"/>
+                                <Link href={`/rules/deduction/edit/${deduc.id}`}>
+                                    <Edit className="mx-4"/>
+                                </Link>
                             </div>
                         </li>
                         )}
@@ -169,7 +171,9 @@ export default function RulesPage() {
                                     <div className="font-black text-red-700 text-lg">-₱{pena.amount.toLocaleString()}</div>
                                     <div><span className="text-[12px] uppercase text-muted-foreground font-black tracking-tighter"> {pena.method} </span></div>
                                 </div>
-                                <Edit className="mx-4"/>
+                                <Link href={`/rules/penalty/edit/${pena.id}`}>
+                                    <Edit className="mx-4"/>
+                                </Link>
                             </div>
                         </li>
                         )}
@@ -204,7 +208,9 @@ export default function RulesPage() {
                                     <div className="font-black text-lg">₱{add.amount.toLocaleString()}</div>
                                     <div><span className="text-[12px] uppercase text-muted-foreground font-black tracking-tighter"> {add.method} </span></div>
                                 </div>
-                                <Edit className="mx-4" />
+                                <Link href={`/rules/additional/edit/${add.id}`}>
+                                    <Edit className="mx-4"/>
+                                </Link>
                             </div>
                         </li>
                         )}
