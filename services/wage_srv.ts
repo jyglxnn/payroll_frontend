@@ -9,6 +9,7 @@ import {
     Method,
     Rate,
 } from '@/api/types';
+import { get } from "http";
 
 interface APISalary{
     id : string,
@@ -28,6 +29,7 @@ interface APIDeduction {
     deduction_on : number,
     method : Method,
     rate : Rate,
+    value : number,
     updated_at : string, 
 }
 
@@ -38,6 +40,7 @@ interface APIPenalty {
     amount : number,
     method : Method,
     rate : Rate,
+    value : number,
     updated_at : string,
 }
 
@@ -84,6 +87,35 @@ export const WageService = {
         }
     },
 
+    async getSalaryId(id:string) : Promise<Salary | undefined> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/salary-base/${id}/`, {
+                method: 'GET',
+                headers: {
+                'Accept': 'application/json',
+                },
+            });
+
+            if (!response.ok) throw new Error(`Failed to fetch salary with id ${id}: ${response.statusText}`);
+            
+            const salary : APISalary = await response.json();
+            
+            return {
+                id : salary.id,
+                name : salary.name,
+                description : salary.description || '',
+                amount: salary.amount, 
+                releaseType : salary.release_type,
+                base : salary.base,
+                updatedAt : salary.updated_at,
+            };
+            
+        } catch (err) {
+            console.error(`Error fetching salary with id ${id}:`, err);
+            return undefined;
+        }
+    },
+
     async getDeduction() : Promise<Deduction[]> {
         try {
             const response = await fetch(`${API_URL_BASE}/rules/deductions/`, {
@@ -106,11 +138,42 @@ export const WageService = {
                 deductionOn: deduc.deduction_on,
                 method: deduc.method,
                 rate: deduc.rate,
+                value: deduc.value,
                 updatedAt: deduc.updated_at,
             }));
         } catch (err) {
             console.error('Error fetching deductions: ', err);
             return []
+        }
+    },
+
+    async getDeductionId(id:string) : Promise<Deduction | undefined> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/deductions/${id}/`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+            });
+            
+            if (!response.ok) throw new Error(`Failed to fetch deduction with id ${id}: ${response.statusText}`);   
+            
+            const deduction : APIDeduction= await response.json();
+            
+            return {
+                id : deduction.id,
+                name : deduction.name,
+                description : deduction.description || '',
+                amount : deduction.amount,
+                deductionOn: deduction.deduction_on,
+                method: deduction.method,
+                rate: deduction.rate,
+                value: deduction.value,
+                updatedAt: deduction.updated_at,
+            };
+        } catch (err) {
+            console.error(`Error fetching deduction with id ${id}:`, err);
+            return undefined;
         }
     },
 
@@ -135,11 +198,41 @@ export const WageService = {
                 amount : pena.amount,
                 method: pena.method,
                 rate: pena.rate,
+                value: pena.value,
                 updatedAt: pena.updated_at,
             }));
         } catch (err) {
             console.error('Error fetching penalties: ', err);
             return []
+        }
+    },
+
+    async getPenaltyId(id:string) : Promise<Penalty | undefined> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/penalties/${id}/`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+            });
+            
+            if (!response.ok) throw new Error(`Failed to fetch penalty with id ${id}: ${response.statusText}`);   
+            
+            const penalty : APIPenalty= await response.json();
+            
+            return {
+                id : penalty.id,
+                name : penalty.name,
+                description : penalty.description || '',
+                amount : penalty.amount,
+                method: penalty.method,
+                rate: penalty.rate,
+                value: penalty.value,
+                updatedAt: penalty.updated_at,
+            };
+        } catch (err) {
+            console.error(`Error fetching penalty with id ${id}:`, err);
+            return undefined;
         }
     },
 
@@ -173,6 +266,37 @@ export const WageService = {
             console.error('Error fetching additionals: ', err);
             return []
         }
-    }
+    },
+
+    async getAdditionalId(id:string) : Promise<Additional | undefined> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/additionals/${id}/`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+            }); 
+
+            if (!response.ok) throw new Error(`Failed to fetch additional with id ${id}: ${response.statusText}`);
+            
+            const additional : APIAdditional = await response.json();
+            
+            return {
+                id : additional.id,
+                name : additional.name,
+                description : additional.description || '',
+                amount : additional.amount,
+                method : additional.method,
+                rate : additional.rate,
+                value : additional.value,
+                duration : additional.duration,
+                frequency : additional.frequency,
+                updatedAt : additional.updated_at,
+            };
+        } catch (err) {
+            console.error(`Error fetching additional with id ${id}:`, err);
+            return undefined;
+        }
+    },
 
 }

@@ -1,16 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, CirclePlus } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
+import { useRouter, useParams } from "next/navigation"
+import { ArrowLeft, Edit, Loader} from "lucide-react"
 import Button from "@/app/components/ui/Button"
-
-const ruleCategories = [
-    { label: "Salary Base", value: "salary_base" },
-    { label: "Deduction", value: "deduction" },
-    { label: "Penalty", value: "penalty" },
-    { label: "Additional", value: "additional" },
-]
+import { WageService } from "@/services/wage_srv"
 
 const methodOptions = [
     { label: "Fixed", value: "fixed" },
@@ -19,9 +13,11 @@ const methodOptions = [
     { label: "Multiplier", value: "multiplier" },
 ]
 
-export default function SalaryNewPage(){
+export default function EditRulePage(){
     const router = useRouter();
-    const [selectedCategory, setSelectedCategory] = useState(ruleCategories[0].value);
+    const params = useParams();
+    const ruleId = params.ruleId as string;
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,15 +26,12 @@ export default function SalaryNewPage(){
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        amount: "",
+        amount: "" as string | number,
         releaseType: "", 
         base: "",
-        method: "fixed",
+        method: "",
         rate: "",
-        deductionOn: "",
         value: "",
-        duration: "",
-        frequency: ""
     });
 
     const isFixed = formData.method == "fixed";
@@ -60,10 +53,52 @@ export default function SalaryNewPage(){
         placeholder = "e.g., 1.5";
     }
 
-    const isSalaryBase = selectedCategory === "salary_base";
-    const isDeduction = selectedCategory === "deduction";
-    const isPenalty = selectedCategory === "penalty";
-    const isAdditional = selectedCategory === "additional";
+    const fetchRuleData = useCallback(async () => {
+        if (!ruleId) {
+            console.error("No ruleId found in params");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            const data = await WageService.getSalaryId(ruleId);
+            
+            if (data) {
+                setFormData(prev => ({
+                    ...prev,
+                    name: data.name,
+                    description: data.description,
+                    amount: data.amount,
+                    base: data.base,
+                    releaseType: data.releaseType
+                }));
+            } else {
+                console.warn(`No salary found with id ${ruleId}`);
+            }
+
+        } catch (error) {
+            console.error("Error fetching rule data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [ruleId]);
+
+    useEffect(() => {
+        fetchRuleData();
+    }, [fetchRuleData]);
+
+    if (isLoading) {
+        return (
+            <div className="flex h-screen items-center justify-center gap-2">
+                <svg className="w-8 h-8 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="#03045e" strokeWidth="4"> </circle>
+                    <path className="opacity-75" fill="#03045e" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p> Loading Salary </p>
+            </div>
+        );
+    }
     
     const inputClasses = "w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#03045e] disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:border-gray-200 transition-colors";
 
@@ -80,10 +115,10 @@ export default function SalaryNewPage(){
             <div className="flex flex-col max-w-[96vw] md:max-w-[48rem] rounded-md shadow-md mx-auto overflow-hidden">
                 <div className="flex gap-2 px-8 py-4 items-center bg-[#03045e]">
                     <div className="p-4 border-2 border-green-200 rounded-lg">
-                        <CirclePlus className="text-green-200 w-6 h-6" />
+                        <Edit className="text-green-200 w-6 h-6" />
                     </div>
                     <div className="p-4 text-white">
-                        <p className="text-2xl font-black uppercase"> Create Rule </p>
+                        <p className="text-2xl font-black uppercase"> Edit Rule </p>
                         <p> Define the logic for salary, deductions, penalties,or additionals.</p>
                     </div>
                 </div>
@@ -101,17 +136,8 @@ export default function SalaryNewPage(){
                     <div className="flex flex-col gap-2">
                         <label className='font-semibold'> Rule Category </label>
 
-                        <select 
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                            className={inputClasses}
-                        >
-                            <option value="" disabled>Select a category to begin</option>
-                            {ruleCategories.map((category) => (
-                                <option key={category.value} value={category.value}>
-                                    {category.label}
-                                </option>
-                            ))}
+                        <select name="category" className={inputClasses} disabled>
+                            <option value=""> Salary Base </option>
                         </select>
                     </div>
 
@@ -125,7 +151,7 @@ export default function SalaryNewPage(){
                         )}
                     </div>
 
-                    <div className={`flex-col gap-2 ${isSalaryBase ? '' : 'hidden'}`}>
+                    <div className="flex-col gap-2">
                         <label className="font-semibold"> Salary Base </label>
                         <select name="base" value={formData.base} onChange={handleChange} className={inputClasses}>
                             <option value="" disabled> Select salary base </option>
@@ -135,59 +161,8 @@ export default function SalaryNewPage(){
                             <option value="annually">Annually</option>
                         </select>
                     </div>
-                    
-                    <div className={`flex flex-col gap-2 ${isSalaryBase ? 'hidden' : ''}`}>
-                        <div className="flex flex-col gap-2">
-                            <label className="font-semibold"> Calculation Method </label>
-                                <select name="method" value={formData.method} onChange={handleChange} className={inputClasses}>
-                                    <option value="fixed">Fixed</option>
-                                    <option value="rate">Rate</option>
-                                    <option value="average">Average</option>
-                                    <option value="multiplier">Multiplier</option>
-                                </select>
-                        </div>
 
-                        <div className={`w-full gap-4 ${isRate ? 'flex' : ''}`}>
-                            <div className={`flex-col w-full gap-2 ${isRate ? 'flex' : 'hidden'}`}>
-                                <label className="font-semibold"> Rate per </label>
-                                <select name="rate" value={formData.rate} onChange={handleChange} className={inputClasses}>
-                                    <option value="" disabled> Select rate </option>
-                                    <option value="mins">Minutes</option>
-                                    <option value="hours">Hours</option>
-                                    <option value="days">Days</option>
-                                    <option value="months">Months</option>
-                                </select>
-                            </div>
-
-                            <div className={`flex-col gap-2 ${!isFixed ? 'flex' : 'hidden'}`}>
-                                <label className="font-semibold"> {methodLabel} </label>
-                                <input type="number" name='value' value={formData.value} onChange={handleChange} className={inputClasses} placeholder={placeholder}/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className={`flex-col gap-4 ${isDeduction ? 'flex' : 'hidden'}`}>
-                        <label className="font-semibold"> Deduction on Day </label>
-                        <input type="number" name='deductionOn' value={formData.deductionOn} onChange={handleChange} className={inputClasses} placeholder="30"/>
-                    </div>
-
-                    <div className={`flex-col gap-4 ${isAdditional ? 'flex' : 'hidden'}`}>
-                        <label className="font-semibold"> Duration of Benefits (days) </label>
-                        <input type="number" name='duration' value={formData.duration} onChange={handleChange} className={inputClasses} placeholder="30"/>
-                    </div>
-
-                    <div className={`flex flex-col gap-2 ${isAdditional ? 'flex' : 'hidden'}`}>
-                        <label className="font-semibold"> Payment Frequency </label>
-                            <select name="frequency" value={formData.frequency} onChange={handleChange} className={inputClasses}>
-                                <option value="" disabled> Select frequency </option>
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="semimonthly">Semi-monthly</option>
-                                <option value="monthly">Monthly</option>
-                            </select>
-                    </div>
-
-                    <div className={`flex flex-col gap-2 ${isSalaryBase ? 'flex' : 'hidden'}`}>
+                    <div className="flex flex-col gap-2">
                         <label className="font-semibold"> Payment Frequency </label>
                             <select name="releaseType" value={formData.releaseType} onChange={handleChange} className={inputClasses}>
                                 <option value="" disabled> Select frequency </option>
