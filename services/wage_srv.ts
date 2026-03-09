@@ -87,6 +87,44 @@ export const WageService = {
         }
     },
 
+    async createSalary(payload: Omit<Salary, 'id' | 'updatedAt'>): Promise<Salary | undefined> {
+        try {
+            const body = {
+                name: payload.name,
+                description: payload.description,
+                amount: payload.amount,
+                release_type: payload.releaseType,
+                base: payload.base,
+            };
+
+            const response = await fetch(`${API_URL_BASE}/rules/salary-base/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to create salary: ${response.statusText}`);
+
+            const data: APISalary = await response.json();
+            
+            return {
+                id: data.id,
+                name: data.name,
+                description: data.description || '',
+                amount: data.amount,
+                releaseType: data.release_type,
+                base: data.base,
+                updatedAt: data.updated_at,
+            };
+        } catch (err) {
+            console.error('Error creating salary:', err);
+            return undefined;
+        }
+    },
+
     async getSalaryId(id:string) : Promise<Salary | undefined> {
         try {
             const response = await fetch(`${API_URL_BASE}/rules/salary-base/${id}/`, {
@@ -112,6 +150,58 @@ export const WageService = {
             
         } catch (err) {
             console.error(`Error fetching salary with id ${id}:`, err);
+            return undefined;
+        }
+    },
+
+    async deleteSalary(id: string): Promise<boolean> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/salary-base/${id}/`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) throw new Error(`Failed to delete salary with id ${id}: ${response.statusText}`);
+
+            return true;
+        } catch (err) {
+            console.error(`Error deleting salary with id ${id}:`, err);
+            return false;
+        }
+    },
+
+    async updateSalary(id: string, payload: Partial<Salary>): Promise<Salary | undefined> {
+        try {
+            const body: any = {};
+            if (payload.name) body.name = payload.name;
+            if (payload.description) body.description = payload.description;
+            if (payload.amount !== undefined) body.amount = payload.amount;
+            if (payload.releaseType) body.release_type = payload.releaseType;
+            if (payload.base) body.base = payload.base;
+
+            const response = await fetch(`${API_URL_BASE}/rules/salary-base/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to update salary: ${response.statusText}`);
+
+            const data: APISalary = await response.json();
+
+            return {
+                id: data.id,
+                name: data.name,
+                description: data.description || '',
+                amount: data.amount,
+                releaseType: data.release_type,
+                base: data.base,
+                updatedAt: data.updated_at,
+            };
+        } catch (err) {
+            console.error(`Error updating salary with id ${id}:`, err);
             return undefined;
         }
     },
@@ -147,6 +237,48 @@ export const WageService = {
         }
     },
 
+    async createDeduction(payload: Omit<Deduction, 'id' | 'updatedAt'>): Promise<Deduction | undefined> {
+        try {
+            const body = {
+                name: payload.name,
+                description: payload.description,
+                amount: payload.amount,
+                deduction_on: payload.deductionOn,
+                method: payload.method,
+                rate: payload.rate,
+                value: payload.value,
+            };
+
+            const response = await fetch(`${API_URL_BASE}/rules/deductions/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to create deduction: ${response.statusText}`);
+
+            const data: APIDeduction = await response.json();
+            
+            return {
+                id : data.id,
+                name : data.name,
+                description : data.description || '',
+                amount : data.amount,
+                deductionOn: data.deduction_on,
+                method: data.method,
+                rate: data.rate,
+                value: data.value,
+                updatedAt: data.updated_at,
+            };
+        } catch (err) {
+            console.error('Error creating deduction:', err);
+            return undefined;
+        }
+    },
+
     async getDeductionId(id:string) : Promise<Deduction | undefined> {
         try {
             const response = await fetch(`${API_URL_BASE}/rules/deductions/${id}/`, {
@@ -173,6 +305,62 @@ export const WageService = {
             };
         } catch (err) {
             console.error(`Error fetching deduction with id ${id}:`, err);
+            return undefined;
+        }
+    },
+
+    async deleteDeduction(id: string): Promise<boolean> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/deductions/${id}/`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) throw new Error(`Failed to delete deduction with id ${id}: ${response.statusText}`);
+
+            return true;
+        } catch (err) {
+            console.error(`Error deleting deduction with id ${id}:`, err);
+            return false;
+        }
+    },
+
+    async updateDeduction(id: string, payload: Partial<Deduction>): Promise<Deduction | undefined> {
+        try {
+            const body: any = {};
+            if (payload.name) body.name = payload.name;
+            if (payload.description) body.description = payload.description;
+            if (payload.amount !== undefined) body.amount = payload.amount;
+            if (payload.deductionOn !== undefined) body.deduction_on = payload.deductionOn;
+            if (payload.method) body.method = payload.method;
+            if (payload.rate) body.rate = payload.rate;
+            if (payload.value) body.value = payload.value;
+
+            const response = await fetch(`${API_URL_BASE}/rules/deductions/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to update deduction: ${response.statusText}`);
+
+            const data: APIDeduction = await response.json();
+
+            return {
+                id : data.id,
+                name : data.name,
+                description : data.description || '',
+                amount : data.amount,
+                deductionOn: data.deduction_on,
+                method: data.method,
+                rate: data.rate,
+                value: data.value,
+                updatedAt: data.updated_at,
+            }
+        } catch (err) {
+            console.error(`Error updating deduction with id ${id}:`, err);
             return undefined;
         }
     },
@@ -207,6 +395,46 @@ export const WageService = {
         }
     },
 
+    async createPenalty(payload: Omit<Penalty, 'id' | 'updatedAt'>): Promise<Penalty | undefined> {
+        try {
+            const body = {
+                name: payload.name,
+                description: payload.description,
+                amount: payload.amount,
+                method: payload.method,
+                rate: payload.rate,
+                value: payload.value,
+            };
+
+            const response = await fetch(`${API_URL_BASE}/rules/penalties/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to create penalty: ${response.statusText}`);
+
+            const data: APIPenalty = await response.json();
+            
+            return {
+                id : data.id,
+                name : data.name,
+                description : data.description || '',
+                amount : data.amount,
+                method: data.method,
+                rate: data.rate,
+                value: data.value,
+                updatedAt: data.updated_at,
+            };
+        } catch (err) {
+            console.error('Error creating penalty:', err);
+            return undefined;
+        }
+    },  
+
     async getPenaltyId(id:string) : Promise<Penalty | undefined> {
         try {
             const response = await fetch(`${API_URL_BASE}/rules/penalties/${id}/`, {
@@ -232,6 +460,60 @@ export const WageService = {
             };
         } catch (err) {
             console.error(`Error fetching penalty with id ${id}:`, err);
+            return undefined;
+        }
+    },
+
+    async deletePenalty(id: string): Promise<boolean> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/penalties/${id}/`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) throw new Error(`Failed to delete penalty with id ${id}: ${response.statusText}`);
+
+            return true;
+        } catch (err) {
+            console.error(`Error deleting penalty with id ${id}:`, err);
+            return false;
+        }
+    },
+
+    async updatePenalty(id: string, payload: Partial<Penalty>): Promise<Penalty | undefined> {
+        try {
+            const body: any = {};
+            if (payload.name) body.name = payload.name;
+            if (payload.description) body.description = payload.description;
+            if (payload.amount !== undefined) body.amount = payload.amount;
+            if (payload.method) body.method = payload.method;
+            if (payload.rate) body.rate = payload.rate;
+            if (payload.value) body.value = payload.value;
+
+            const response = await fetch(`${API_URL_BASE}/rules/penalties/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to update penalty: ${response.statusText}`);
+
+            const data: APIPenalty = await response.json();
+
+            return {
+                id : data.id,
+                name : data.name,
+                description : data.description || '',
+                amount : data.amount,
+                method : data.method,
+                rate : data.rate,
+                value : data.value,
+                updatedAt : data.updated_at,
+            }
+        } catch (err) {
+            console.error(`Error updating penalty with id ${id}:`, err);
             return undefined;
         }
     },
@@ -268,6 +550,50 @@ export const WageService = {
         }
     },
 
+    async createAdditional(payload: Omit<Additional, 'id' | 'updatedAt'>): Promise<Additional | undefined> {
+        try {
+            const body = {
+                name: payload.name,
+                description: payload.description,
+                amount: payload.amount,
+                method: payload.method,
+                rate: payload.rate,
+                value: payload.value,
+                duration: payload.duration,
+                frequency: payload.frequency,
+            };
+
+            const response = await fetch(`${API_URL_BASE}/rules/additionals/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to create additional: ${response.statusText}`);
+
+            const data: APIAdditional = await response.json();
+            
+            return {
+                id : data.id,
+                name : data.name,
+                description : data.description || '',
+                amount : data.amount,
+                method : data.method,
+                rate : data.rate,
+                value : data.value,
+                duration : data.duration,
+                frequency : data.frequency,
+                updatedAt : data.updated_at,
+            };
+        } catch (err) {
+            console.error('Error creating additional:', err);
+            return undefined;
+        }
+    },
+
     async getAdditionalId(id:string) : Promise<Additional | undefined> {
         try {
             const response = await fetch(`${API_URL_BASE}/rules/additionals/${id}/`, {
@@ -295,6 +621,64 @@ export const WageService = {
             };
         } catch (err) {
             console.error(`Error fetching additional with id ${id}:`, err);
+            return undefined;
+        }
+    },
+
+    async deleteAdditional(id: string): Promise<boolean> {
+        try {
+            const response = await fetch(`${API_URL_BASE}/rules/additionals/${id}/`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) throw new Error(`Failed to delete additional with id ${id}: ${response.statusText}`);
+
+            return true;
+        } catch (err) {
+            console.error(`Error deleting additional with id ${id}:`, err);
+            return false;
+        }
+    },
+
+    async updateAdditional(id: string, payload: Partial<Additional>): Promise<Additional | undefined> {
+        try {
+            const body: any = {};
+            if (payload.name) body.name = payload.name;
+            if (payload.description) body.description = payload.description;
+            if (payload.amount !== undefined) body.amount = payload.amount;
+            if (payload.method) body.method = payload.method;
+            if (payload.rate) body.rate = payload.rate;
+            if (payload.value) body.value = payload.value;
+            if (payload.duration) body.duration = payload.duration;
+            if (payload.frequency) body.frequency = payload.frequency;
+
+            const response = await fetch(`${API_URL_BASE}/rules/additionals/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) throw new Error(`Failed to update additional: ${response.statusText}`);
+
+            const data: APIAdditional = await response.json();
+
+            return {
+                id : data.id,
+                name : data.name,
+                description : data.description || '',
+                amount : data.amount,
+                method : data.method,
+                rate : data.rate,
+                value : data.value,
+                duration : data.duration,
+                frequency : data.frequency,
+                updatedAt : data.updated_at,
+            };
+        } catch (err) {
+            console.error(`Error updating additional with id ${id}:`, err);
             return undefined;
         }
     },

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, CirclePlus } from "lucide-react"
 import Button from "@/app/components/ui/Button"
+import { WageService } from "@/services/wage_srv"
+import { BaseLine, ReleaseType, Method, Rate } from "@/api/types"
+import toast from 'react-hot-toast';
 
 const ruleCategories = [
     { label: "Salary Base", value: "salary_base" },
@@ -22,10 +25,7 @@ const methodOptions = [
 export default function SalaryNewPage(){
     const router = useRouter();
     const [selectedCategory, setSelectedCategory] = useState(ruleCategories[0].value);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const [isLoading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -40,6 +40,78 @@ export default function SalaryNewPage(){
         duration: "",
         frequency: ""
     });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async () => {
+        // Define the async logic for the toast promise
+        const createRuleAction = async () => {
+            let result; // Declare once here
+
+            const amount = Number(formData.amount);
+            const val = Number(formData.value);
+
+            // Logic based on category
+            switch (selectedCategory) {
+                case "salary_base":
+                    result = await WageService.createSalary({
+                        name: formData.name,
+                        description: formData.description,
+                        amount,
+                        releaseType: formData.releaseType as ReleaseType,
+                        base: formData.base as BaseLine,
+                    });
+                    break;
+                case "deduction":
+                    result = await WageService.createDeduction({
+                        name: formData.name,
+                        description: formData.description,
+                        amount,
+                        method: formData.method as Method,
+                        rate: formData.rate as Rate,
+                        value: val,
+                        deductionOn: Number(formData.deductionOn),
+                    });
+                    break;
+                case "penalty":
+                    result = await WageService.createPenalty({
+                        name: formData.name,
+                        description: formData.description,
+                        amount,
+                        method: formData.method as Method,
+                        rate: formData.rate as Rate,
+                        value: val,
+                    });
+                    break;
+                case "additional":
+                    result = await WageService.createAdditional({
+                        name: formData.name,
+                        description: formData.description,
+                        amount,
+                        method: formData.method as Method,
+                        rate: formData.rate as Rate,
+                        value: val,
+                        duration: Number(formData.duration),
+                        frequency: formData.frequency as ReleaseType,
+                    });
+                    break;
+            }
+
+            if (!result) throw new Error("Failed to create rule");
+            return result;
+        };
+
+        toast.promise(createRuleAction(), {
+            loading: 'Saving rule...',
+            success: () => {
+                router.push("/rules");
+                return <b>Rule created successfully!</b>;
+            },
+            error: <b>Could not save the rule. Please check your inputs.</b>,
+        });
+    };
 
     const isFixed = formData.method == "fixed";
     const isRate = formData.method == "rate";
@@ -199,8 +271,12 @@ export default function SalaryNewPage(){
                     </div>
 
                     <div className="grid grid-col md:grid-cols-3 bg-white border-dashed border-t-2 border-gray-200 gap-4 py-4">
-                        <Button variant="solid" className="col-span-1 md:col-span-2 disabled={!selectedCategory}"> Create Rule Component </Button>
-                        <Button variant="outline" className="col-span-1" onClick={() =>router.back()}> Discard </Button>
+                        <Button variant="solid" className="col-span-1 md:col-span-2 disabled={!selectedCategory}" onClick={handleSubmit}>
+                            Create Rule Component
+                        </Button>
+                        <Button variant="outline" className="col-span-1" onClick={() => router.back()}>
+                            Discard
+                        </Button>
                     </div>
                 </div>
             </div>

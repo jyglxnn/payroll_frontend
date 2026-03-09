@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, CirclePlus } from "lucide-react"
 import { WageService }  from "@/services/wage_srv"
+import { Method, Rate, ReleaseType } from "@/api/types"
+import toast from "react-hot-toast"
 import Button from "@/app/components/ui/Button"
 
 const methodOptions = [
@@ -20,10 +22,6 @@ export default function EditRulePage(){
     
     const [isLoading, setIsLoading] = useState(true)
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -34,6 +32,97 @@ export default function EditRulePage(){
         duration: "" as string | number,
         frequency: ""
     });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleDelete = () => {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <span className="font-semibold text-gray-800">
+                    Are you sure you want to delete this rule?
+                </span>
+                <div className="flex gap-2 justify-end">
+                    <button
+                        onClick={() => toast.dismiss()}
+                        className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={async () => {
+                            toast.dismiss();
+                            await executeDelete();
+                        }}
+                        className="px-3 py-1 text-sm font-bold bg-red-600 text-white rounded-md hover:bg-red-700"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: 10000,
+            position: 'top-center',
+            style: { border: '1px solid #ff0000', padding: '16px' }
+        });
+    };
+
+    const executeDelete = async () => {
+        const deletePromise = WageService.deleteAdditional(ruleId);
+        
+        toast.promise(
+            deletePromise,
+            {
+                loading: 'Deleting...',
+                success: "Rule deleted successfully.",
+                error: "Failed to delete rule.",
+            }
+        );
+
+        try {
+            const success = await deletePromise;
+            
+            if (success) {
+                setTimeout(() => {
+                    router.push("/rules");
+                }, 1000); 
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleUpdate = async () => {
+        const updatePromise = WageService.updateAdditional(ruleId, {
+            name: formData.name,
+            description: formData.description,
+            amount: Number(formData.amount),
+            method: formData.method as Method,
+            rate: formData.rate as Rate,
+            value: Number(formData.value),
+            duration: Number(formData.duration),
+            frequency: formData.frequency as ReleaseType,
+        });
+
+        toast.promise(
+            updatePromise,
+            {
+                loading: 'Updating...',
+                success: "Rule updated successfully.",
+                error: "Failed to update rule.",
+            }
+        );
+
+        try {
+            await updatePromise;
+            setTimeout(() => {
+                router.push("/rules");
+            }, 1000);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const isFixed = formData.method == "fixed";
     const isRate = formData.method == "rate";
@@ -197,7 +286,8 @@ export default function EditRulePage(){
                     </div>
 
                     <div className="grid grid-col md:grid-cols-3 bg-white border-dashed border-t-2 border-gray-200 gap-4 py-4">
-                        <Button variant="solid" className="col-span-1 md:col-span-2 disabled={!selectedCategory}"> Create Rule Component </Button>
+                        <Button variant="solid" className="col-span-1 disabled={!selectedCategory}" onClick={handleUpdate}> Update Rule Component </Button>
+                        <Button variant="warn" className="col-span-1 text-red-700" onClick={handleDelete}> Delete </Button>
                         <Button variant="outline" className="col-span-1" onClick={() =>router.back()}> Discard </Button>
                     </div>
                 </div>
