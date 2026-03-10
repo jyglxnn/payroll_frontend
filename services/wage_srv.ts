@@ -1,4 +1,4 @@
-import { API_URL_BASE } from "@/api/api";
+import { API } from "@/api/api";
 import { 
     Salary,
     Deduction,
@@ -9,9 +9,8 @@ import {
     Method,
     Rate,
 } from '@/api/types';
-import { get } from "http";
 
-interface APISalary{
+export interface APISalary{
     id : string,
     name : string,
     description? : string,
@@ -58,29 +57,24 @@ interface APIAdditional {
 }
 
 export const WageService = {
+    mapAPISalaryToSalary(data: APISalary): Salary {
+        return {
+            id: data.id,
+            name: data.name,
+            description: data.description || '',
+            amount: data.amount,
+            releaseType: data.release_type,
+            base: data.base,
+            updatedAt: data.updated_at,
+        };
+    },
+
     async getSalary(): Promise<Salary[]> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/salary-base/`, {
-                method: 'GET',
-                headers: {
-                'Accept': 'application/json',
-                },
-            });
+            const response = await API.get<APISalary[] | { results: APISalary[] }>('/rules/salary-base/');
+            const salariesData: APISalary[] = Array.isArray(response.data) ? response.data : (response.data.results || []);
 
-            if (!response.ok) throw new Error(`Failed to fetch salaries: ${response.statusText}`);
-
-            const data = await response.json();
-            const salariesData: APISalary[] = Array.isArray(data) ? data : (data.results || []);
-
-            return salariesData.map((salary : APISalary): Salary => ({
-                id : salary.id,
-                name : salary.name,
-                description : salary.description || '',
-                amount : salary.amount,
-                releaseType : salary.release_type,
-                base : salary.base,
-                updatedAt : salary.updated_at,
-            }));
+            return salariesData.map(salary => this.mapAPISalaryToSalary(salary));
         } catch (err) {
             console.error('Error fetching salaries:', err);
             return [];
@@ -97,18 +91,8 @@ export const WageService = {
                 base: payload.base,
             };
 
-            const response = await fetch(`${API_URL_BASE}/rules/salary-base/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to create salary: ${response.statusText}`);
-
-            const data: APISalary = await response.json();
+            const response = await API.post<APISalary>('/rules/salary-base/', body);
+            const data = response.data;
             
             return {
                 id: data.id,
@@ -127,16 +111,8 @@ export const WageService = {
 
     async getSalaryId(id:string) : Promise<Salary | undefined> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/salary-base/${id}/`, {
-                method: 'GET',
-                headers: {
-                'Accept': 'application/json',
-                },
-            });
-
-            if (!response.ok) throw new Error(`Failed to fetch salary with id ${id}: ${response.statusText}`);
-            
-            const salary : APISalary = await response.json();
+            const response = await API.get<APISalary>(`/rules/salary-base/${id}/`);
+            const salary = response.data;
             
             return {
                 id : salary.id,
@@ -156,12 +132,7 @@ export const WageService = {
 
     async deleteSalary(id: string): Promise<boolean> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/salary-base/${id}/`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error(`Failed to delete salary with id ${id}: ${response.statusText}`);
-
+            await API.delete(`/rules/salary-base/${id}/`);
             return true;
         } catch (err) {
             console.error(`Error deleting salary with id ${id}:`, err);
@@ -178,18 +149,8 @@ export const WageService = {
             if (payload.releaseType) body.release_type = payload.releaseType;
             if (payload.base) body.base = payload.base;
 
-            const response = await fetch(`${API_URL_BASE}/rules/salary-base/${id}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to update salary: ${response.statusText}`);
-
-            const data: APISalary = await response.json();
+            const response = await API.patch<APISalary>(`/rules/salary-base/${id}/`, body);
+            const data = response.data;
 
             return {
                 id: data.id,
@@ -208,17 +169,8 @@ export const WageService = {
 
     async getDeduction() : Promise<Deduction[]> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/deductions/`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            });
-
-            if (!response.ok) throw new Error(`Failed to fetch deductions: ${response.statusText}`);
-
-            const data = await response.json();
-            const deducData : APIDeduction[] = Array.isArray(data) ? data : (data.results || []);
+            const response = await API.get<APIDeduction[] | { results: APIDeduction[] }>('/rules/deductions/');
+            const deducData : APIDeduction[] = Array.isArray(response.data) ? response.data : (response.data.results || []);
             
             return deducData.map((deduc : APIDeduction): Deduction => ({
                 id : deduc.id,
@@ -249,18 +201,8 @@ export const WageService = {
                 value: payload.value,
             };
 
-            const response = await fetch(`${API_URL_BASE}/rules/deductions/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to create deduction: ${response.statusText}`);
-
-            const data: APIDeduction = await response.json();
+            const response = await API.post<APIDeduction>('/rules/deductions/', body);
+            const data = response.data;
             
             return {
                 id : data.id,
@@ -281,16 +223,8 @@ export const WageService = {
 
     async getDeductionId(id:string) : Promise<Deduction | undefined> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/deductions/${id}/`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            });
-            
-            if (!response.ok) throw new Error(`Failed to fetch deduction with id ${id}: ${response.statusText}`);   
-            
-            const deduction : APIDeduction= await response.json();
+            const response = await API.get<APIDeduction>(`/rules/deductions/${id}/`);
+            const deduction = response.data;
             
             return {
                 id : deduction.id,
@@ -311,12 +245,7 @@ export const WageService = {
 
     async deleteDeduction(id: string): Promise<boolean> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/deductions/${id}/`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error(`Failed to delete deduction with id ${id}: ${response.statusText}`);
-
+            await API.delete(`/rules/deductions/${id}/`);
             return true;
         } catch (err) {
             console.error(`Error deleting deduction with id ${id}:`, err);
@@ -335,18 +264,8 @@ export const WageService = {
             if (payload.rate) body.rate = payload.rate;
             if (payload.value) body.value = payload.value;
 
-            const response = await fetch(`${API_URL_BASE}/rules/deductions/${id}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to update deduction: ${response.statusText}`);
-
-            const data: APIDeduction = await response.json();
+            const response = await API.patch<APIDeduction>(`/rules/deductions/${id}/`, body);
+            const data = response.data;
 
             return {
                 id : data.id,
@@ -358,7 +277,7 @@ export const WageService = {
                 rate: data.rate,
                 value: data.value,
                 updatedAt: data.updated_at,
-            }
+            };
         } catch (err) {
             console.error(`Error updating deduction with id ${id}:`, err);
             return undefined;
@@ -367,17 +286,8 @@ export const WageService = {
 
     async getPenalty() : Promise<Penalty[]> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/penalties/`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            });
-
-            if (!response.ok) throw new Error(`Failed to fetch penalties: ${response.statusText}`);
-
-            const data = await response.json();
-            const penaData : APIPenalty[] = Array.isArray(data) ? data : (data.results || []);
+            const response = await API.get<APIPenalty[] | { results: APIPenalty[] }>('/rules/penalties/');
+            const penaData : APIPenalty[] = Array.isArray(response.data) ? response.data : (response.data.results || []);
             
             return penaData.map((pena : APIPenalty): Penalty => ({
                 id : pena.id,
@@ -406,18 +316,8 @@ export const WageService = {
                 value: payload.value,
             };
 
-            const response = await fetch(`${API_URL_BASE}/rules/penalties/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to create penalty: ${response.statusText}`);
-
-            const data: APIPenalty = await response.json();
+            const response = await API.post<APIPenalty>('/rules/penalties/', body);
+            const data = response.data;
             
             return {
                 id : data.id,
@@ -437,16 +337,8 @@ export const WageService = {
 
     async getPenaltyId(id:string) : Promise<Penalty | undefined> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/penalties/${id}/`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            });
-            
-            if (!response.ok) throw new Error(`Failed to fetch penalty with id ${id}: ${response.statusText}`);   
-            
-            const penalty : APIPenalty= await response.json();
+            const response = await API.get<APIPenalty>(`/rules/penalties/${id}/`);
+            const penalty = response.data;
             
             return {
                 id : penalty.id,
@@ -466,12 +358,7 @@ export const WageService = {
 
     async deletePenalty(id: string): Promise<boolean> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/penalties/${id}/`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error(`Failed to delete penalty with id ${id}: ${response.statusText}`);
-
+            await API.delete(`/rules/penalties/${id}/`);
             return true;
         } catch (err) {
             console.error(`Error deleting penalty with id ${id}:`, err);
@@ -489,18 +376,8 @@ export const WageService = {
             if (payload.rate) body.rate = payload.rate;
             if (payload.value) body.value = payload.value;
 
-            const response = await fetch(`${API_URL_BASE}/rules/penalties/${id}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to update penalty: ${response.statusText}`);
-
-            const data: APIPenalty = await response.json();
+            const response = await API.patch<APIPenalty>(`/rules/penalties/${id}/`, body);
+            const data = response.data;
 
             return {
                 id : data.id,
@@ -511,7 +388,7 @@ export const WageService = {
                 rate : data.rate,
                 value : data.value,
                 updatedAt : data.updated_at,
-            }
+            };
         } catch (err) {
             console.error(`Error updating penalty with id ${id}:`, err);
             return undefined;
@@ -520,17 +397,8 @@ export const WageService = {
 
     async getAdditional() : Promise<Additional[]> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/additionals/`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            });
-
-            if (!response.ok) throw new Error(`Failed to fetch additionals: ${response.statusText}`);
-
-            const data = await response.json();
-            const addData : APIAdditional[] = Array.isArray(data) ? data : (data.results || []);
+            const response = await API.get<APIAdditional[] | { results: APIAdditional[] }>('/rules/additionals/');
+            const addData : APIAdditional[] = Array.isArray(response.data) ? response.data : (response.data.results || []);
             
             return addData.map((add : APIAdditional): Additional => ({
                 id : add.id,
@@ -563,18 +431,8 @@ export const WageService = {
                 frequency: payload.frequency,
             };
 
-            const response = await fetch(`${API_URL_BASE}/rules/additionals/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to create additional: ${response.statusText}`);
-
-            const data: APIAdditional = await response.json();
+            const response = await API.post<APIAdditional>('/rules/additionals/', body);
+            const data = response.data;
             
             return {
                 id : data.id,
@@ -596,16 +454,8 @@ export const WageService = {
 
     async getAdditionalId(id:string) : Promise<Additional | undefined> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/additionals/${id}/`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            }); 
-
-            if (!response.ok) throw new Error(`Failed to fetch additional with id ${id}: ${response.statusText}`);
-            
-            const additional : APIAdditional = await response.json();
+            const response = await API.get<APIAdditional>(`/rules/additionals/${id}/`);
+            const additional = response.data;
             
             return {
                 id : additional.id,
@@ -627,12 +477,7 @@ export const WageService = {
 
     async deleteAdditional(id: string): Promise<boolean> {
         try {
-            const response = await fetch(`${API_URL_BASE}/rules/additionals/${id}/`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error(`Failed to delete additional with id ${id}: ${response.statusText}`);
-
+            await API.delete(`/rules/additionals/${id}/`);
             return true;
         } catch (err) {
             console.error(`Error deleting additional with id ${id}:`, err);
@@ -652,18 +497,8 @@ export const WageService = {
             if (payload.duration) body.duration = payload.duration;
             if (payload.frequency) body.frequency = payload.frequency;
 
-            const response = await fetch(`${API_URL_BASE}/rules/additionals/${id}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok) throw new Error(`Failed to update additional: ${response.statusText}`);
-
-            const data: APIAdditional = await response.json();
+            const response = await API.patch<APIAdditional>(`/rules/additionals/${id}/`, body);
+            const data = response.data;
 
             return {
                 id : data.id,

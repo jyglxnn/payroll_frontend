@@ -46,14 +46,12 @@ export default function SalaryNewPage(){
     };
 
     const handleSubmit = async () => {
-        // Define the async logic for the toast promise
         const createRuleAction = async () => {
-            let result; // Declare once here
+            let result;
 
             const amount = Number(formData.amount);
             const val = Number(formData.value);
 
-            // Logic based on category
             switch (selectedCategory) {
                 case "salary_base":
                     result = await WageService.createSalary({
@@ -141,7 +139,7 @@ export default function SalaryNewPage(){
 
 
     return(
-        <div className="flex flex-col space-y-4 md:px-16 py-8">
+        <div className="space-y-4 md:px-16 py-8">
             <div className="flex justify-start w-full">
                 <Button variant="ghost" onClick={() =>router.back()} className="gap-4">
                     <ArrowLeft className="h-6 w-6" /> 
@@ -150,11 +148,11 @@ export default function SalaryNewPage(){
             </div>
             
             <div className="flex flex-col max-w-[96vw] md:max-w-[48rem] rounded-md shadow-md mx-auto overflow-hidden">
-                <div className="flex gap-2 px-8 py-4 items-center bg-[#03045e]">
+                <div className="flex gap-4 p-8 items-center bg-[#03045e]">
                     <div className="p-4 border-2 border-green-200 rounded-lg">
                         <CirclePlus className="text-green-200 w-6 h-6" />
                     </div>
-                    <div className="p-4 text-white">
+                    <div className="text-white">
                         <p className="text-2xl font-black uppercase"> Create Rule </p>
                         <p> Define the logic for salary, deductions, penalties,or additionals.</p>
                     </div>
