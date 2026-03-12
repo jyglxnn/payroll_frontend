@@ -81,11 +81,11 @@ export default function NewSitePage(){
                     <div className="flex flex-col gap-2">
                         <p> Site Reference Photo </p>
                         <div 
-                            className="flex flex-col justify-center items-center border-2 border-dashed border-gray-300 rounded-xl py-24 cursor-pointer overflow-hidden"
+                            className="flex flex-col justify-center items-center border-2 border-dashed border-gray-300 rounded-xl cursor-pointer overflow-hidden"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             {imagePreview ? (
-                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover max-h-48" />
+                                <img src={imagePreview} alt="Preview" className="w-full h-auto block" />
                             ) : (
                                 <>
                                     <Image className="w-16 h-16 text-gray-200" />

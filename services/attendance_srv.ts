@@ -67,4 +67,21 @@ export const AttendanceService = {
         const response = await API.get<APIAttendance>(`/attendance/${attendanceId}/`);
         return mapAttendance(response.data);
     },
+
+    async updateDTR(
+        dtrId: number,
+        data: {
+            status?: DTRStatus;
+            timein_am?: string | null;
+            timeout_am?: string | null;
+            timein_pm?: string | null;
+            timeout_pm?: string | null;
+            leave_type?: string | null;
+            excuse_type?: string | null;
+            note?: string | null;
+        }
+    ): Promise<DailyTimeRecord> {
+        const response = await API.patch<APIAttendanceDTR>(`/attendance/dtr/${dtrId}/`, data);
+        return EmployeesService.mapDTR(response.data as any);
+    },
 };

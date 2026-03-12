@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Users, MapPin, Receipt, CalendarDays, Briefcase, Scale, Menu, X } from "lucide-react";
 
@@ -32,8 +33,13 @@ const Navbar = () => {
     return (
         <>
             <nav className="bg-[#03045e] text-white px-6 py-3 shadow-md">
-                <div className="flex items-center justify-between">
-                    <Link href="/" className="text-lg font-black tracking-tight whitespace-nowrap">WARLEN</Link>
+                <div className="flex items-center py-2 justify-between">
+                    <Link href="/" className=""> 
+                        <div className="flex items-center"> 
+                            <Image src="/logo.png" alt="Warlen Industrial Sales Corporation Logo" width={32} height={32} className="inline-block mr-2" />
+                            <p className="hidden lg:block font-black uppercase tracking-widest truncate"> Warlen Industrial Sales Corporation </p>
+                        </div>
+                    </Link>
 
                     {/* Desktop links */}
                     <ul className="hidden md:flex items-center gap-1">
@@ -70,7 +76,7 @@ const Navbar = () => {
 
             {/* ═══ Mobile sidebar overlay ═══ */}
             {sidebarOpen && (
-                <div className="fixed inset-0 z-50 md:hidden">
+                <div className="fixed inset-0 z-50 lg:hidden">
                     {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -81,7 +87,7 @@ const Navbar = () => {
                     <div className="absolute top-0 left-0 h-full w-72 bg-[#03045e] shadow-2xl flex flex-col animate-slide-in">
                         {/* Sidebar header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-                            <Link href="/" className="text-xl font-black tracking-tight">WARLEN</Link>
+                            <Link href="/" className="text-xl font-black tracking-tight"></Link>
                             <button
                                 onClick={() => setSidebarOpen(false)}
                                 className="p-2 rounded-lg hover:bg-white/10 transition-colors"
@@ -114,7 +120,7 @@ const Navbar = () => {
 
                         {/* Sidebar footer */}
                         <div className="px-6 py-4 border-t border-white/10">
-                            <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Warlen Payroll System</p>
+                            <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Warlen Industrial Sales Corporeatio Payroll System</p>
                         </div>
                     </div>
                 </div>

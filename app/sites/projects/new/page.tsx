@@ -111,11 +111,11 @@ export default function NewProjectPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
                                 <label className="font-semibold"> Start Date </label>
-                                <input type="datetime-local" name="startedAt" value={formData.startedAt} onChange={handleChange} className={inputClasses} />
+                                <input type="date" name="startedAt" value={formData.startedAt} onChange={handleChange} className={inputClasses} />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <label className="font-semibold"> End Date </label>
-                                <input type="datetime-local" name="endedAt" value={formData.endedAt} onChange={handleChange} className={inputClasses} />
+                                <input type="date" name="endedAt" value={formData.endedAt} onChange={handleChange} className={inputClasses} />
                             </div>
                         </div>
 
