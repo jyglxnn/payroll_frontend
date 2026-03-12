@@ -1,12 +1,18 @@
 "use client"
 
+import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { CirclePlus, ArrowLeft, PhilippinePeso } from "lucide-react";
 import Button from "@/app/components/ui/Button";
 import { useEffect, useState } from "react";
+import { WageService } from "@/services/wage_srv";
+import { JobsService } from "@/services/jobs_srv";
+import { Salary } from "@/api/types";
+import { inputClasses } from "@/app/components/ui/styles";
 
 export default function NewWagePage() {
     const router = useRouter();
+    const [salaries, setSalaries] = useState<Salary[]>([]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -21,14 +27,62 @@ export default function NewWagePage() {
     });
 
     useEffect(() => {
+        const fetchSalaries = async () => {
+            try {
+                const data = await WageService.getSalary();
+                setSalaries(data);
+            } catch (error) {
+                console.error("Failed to load salary configurations", error);
+            }
+        };
+        fetchSalaries();
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const inputClasses = "bg-white w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#03045e] disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:border-gray-200 transition-colors";
-    
+    const handleSubmit = async () => {
+        const selectedSalary = salaries.find((s) => String(s.id) === String(formData.salary));
+
+        if (!selectedSalary) {
+            toast.error("Please select a valid salary configuration.");
+            return; 
+        }
+
+        const createJobAction = async () => {
+            try {
+                let result;
+
+                result = await JobsService.createJob({
+                    name: formData.name,
+                    description: formData.description,
+                    salary: selectedSalary,
+                    timeinAmBase: formData.timeinAmBase,
+                    timeoutAmBase: formData.timeoutAmBase,
+                    timeinPmBase: formData.timeinPmBase,
+                    timeoutPmBase: formData.timeoutPmBase,
+                    maximumOvertime: parseInt(formData.maximumOvertime),
+                    minimumOvertime: parseInt(formData.minimumOvertime),
+                });
+                return result;
+            } catch (error) {
+                console.error("Failed to create job role", error);
+                throw error;
+            }
+        };
+
+        toast.promise(createJobAction(), {
+            loading: 'Saving job...',
+            success: () => {
+                router.push("/wages");
+                router.refresh();
+                return <b>Job created successfully!</b>;
+            },
+            error: <b>Could not save the job. Please check your inputs.</b>,
+        });
+    };
+
     return (
         <div className="space-y-4 md:px-16 py-8">
             <div className="flex justify-start w-full">
@@ -67,8 +121,12 @@ export default function NewWagePage() {
                         </div>
 
                         <select name="salary" value={formData.salary} onChange={handleChange} className={inputClasses}>
-                            <option value="">Select Salary Configuration</option>
-                            {/* Dynamically populate salary options from API */}
+                            <option value="" disabled>Select Salary Configuration</option>
+                            {salaries.map((salary) => (
+                                <option key={salary.id} value={salary.id}>
+                                    {salary.name} - ₱{salary.amount.toLocaleString()} per {salary.base.replace("daily", "day").replace("ly", "")} release {salary.releaseType}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -77,31 +135,31 @@ export default function NewWagePage() {
                         <p className="text-sm text-gray-500"> Define the standard work hours for this job role. This will be used as the baseline for calculating overtime and other time-based rules. </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="bg-gray-200 p-4 py-8 rounded-lg">
+                            <div className="bg-gray-200 p-4 rounded-lg">
                                 <p className="font-semibold uppercase text-center"> AM Session </p>
                                 <div className="flex gap-4 mt-4">
                                     <div className="w-full"> 
-                                        <p className="text-sm uppercase"> Time-In</p>
+                                        <p className="text-sm uppercase text-center tracker-widest"> Time-In</p>
                                         <input type="time" name="timeinAmBase" value={formData.timeinAmBase} onChange={handleChange} className={inputClasses} placeholder="Start Time" />
                                     </div>
 
                                     <div className="w-full">
-                                        <p className="text-sm uppercase"> Time-Out </p>
+                                        <p className="text-sm uppercase text-center tracker-widest"> Time-Out </p>
                                         <input type="time" name="timeoutAmBase" value={formData.timeoutAmBase} onChange={handleChange} className={inputClasses} placeholder="End Time" />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-gray-200 p-4 py-8 rounded-lg">
+                            <div className="bg-gray-200 p-4 rounded-lg">
                                 <p className="font-semibold uppercase text-center"> PM Session </p>
                                 <div className="flex gap-4 mt-4">
                                     <div className="w-full"> 
-                                        <p className="text-sm uppercase"> Time-In</p>
+                                        <p className="text-sm uppercase text-center tracker-widest"> Time-In</p>
                                         <input type="time" name="timeinPmBase" value={formData.timeinPmBase} onChange={handleChange} className={inputClasses} placeholder="Start Time" />
                                     </div>
 
                                     <div className="w-full">
-                                        <p className="text-sm uppercase"> Time-Out </p>
+                                        <p className="text-sm uppercase text-center tracker-widest"> Time-Out </p>
                                         <input type="time" name="timeoutPmBase" value={formData.timeoutPmBase} onChange={handleChange} className={inputClasses} placeholder="End Time" />
                                     </div>
                                 </div>
@@ -113,7 +171,7 @@ export default function NewWagePage() {
                         <h2 className="text-lg uppercase font-black"> Overtime Parameters </h2>
                         <p className="text-sm text-gray-500"> Set the thresholds for overtime eligibility. This will determine how much overtime an employee can work and how it is calculated based on the base shift defined above. </p>
 
-                        <div className="flex flex-col md:flex-row md:gap-8">
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8">
                             <div className="w-full">
                                 <p className="text-sm uppercase"> Maximum Overtime Hours Per Day </p>
                                 <input type="number" name="maximumOvertime" value={formData.maximumOvertime} onChange={handleChange} className={inputClasses} placeholder="e.g., 4" />
@@ -127,7 +185,7 @@ export default function NewWagePage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t-2 border-dashed border-gray-200 pt-4">
-                        <Button variant="solid" className="col-span-2 gap-2">
+                        <Button variant="solid" className="col-span-2 gap-2" onClick={handleSubmit}>
                             Create Job Role
                         </Button>
                         <Button variant="outline" className="col-span-1">

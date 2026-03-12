@@ -19,7 +19,7 @@ export default function Button({
     
     const variants = {
         solid: "bg-[#03045e] text-white hover:bg-[#03045e]/64 shadow-sm",
-        outline: "bg-transparent text-[#03045e] border-2 border-[#03045e] hover:bg-[#03045e]/10",
+        outline: "bg-transparent text-[#03045e] border-2 border-[#03045e] hover:bg-[#03045e]/24",
         ghost: "bg-transparent text-[#03045e] hover:bg-[#03045e]/10",
         warn: "bg-red-600 text-white hover:bg-red-700 border border-red-700 shadow-sm",
     };

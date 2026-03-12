@@ -1,0 +1,1 @@
+export const inputClasses = "bg-white w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#03045e] disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:border-gray-200 transition-colors";

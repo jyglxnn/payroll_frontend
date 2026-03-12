@@ -1,13 +1,12 @@
 import { API } from "@/api/api";
-import { Salary, Job } from "@/api/types";
+import { Job } from "@/api/types";
 import { WageService, APISalary } from "./wage_srv";
-import { get } from "http";
 
 interface APIJobs {
     job_id : string,
     name : string,
     description : string,
-    salary : APISalary,
+    salary : APISalary | null,
     timein_am_base : string,
     timein_pm_base : string,
     timeout_am_base : string,
@@ -27,13 +26,13 @@ export const JobsService = {
                 id : data.job_id,
                 name : data.name,
                 description : data.description,
-                salary : WageService.mapAPISalaryToSalary(data.salary),
+                salary : data.salary ? WageService.mapAPISalaryToSalary(data.salary) : null,
                 timeinAmBase : data.timein_am_base,
                 timeinPmBase : data.timein_pm_base,
                 timeoutAmBase : data.timeout_am_base,
                 timeoutPmBase : data.timeout_pm_base,
                 maximumOvertime : data.maximum_overtime,
-                mimimumOvertime : data.minimum_overtime,
+                minimumOvertime : data.minimum_overtime,
                 updatedAt : data.updated_at,
             }));
 
@@ -48,13 +47,13 @@ export const JobsService = {
             const payload = {
                 name : jobData.name,
                 description : jobData.description,
-                salary_id : jobData.salary.id,
+                salary : jobData.salary?.id || null,
                 timein_am_base : jobData.timeinAmBase,
                 timein_pm_base : jobData.timeinPmBase,
                 timeout_am_base : jobData.timeoutAmBase,
                 timeout_pm_base : jobData.timeoutPmBase,
                 maximum_overtime : jobData.maximumOvertime,
-                minimum_overtime : jobData.mimimumOvertime,
+                minimum_overtime : jobData.minimumOvertime,
             };
             const response = await API.post<APIJobs>('/employees/jobs/', payload);
             const data = response.data;
@@ -62,13 +61,13 @@ export const JobsService = {
                 id : data.job_id,
                 name : data.name,
                 description : data.description,
-                salary : WageService.mapAPISalaryToSalary(data.salary),
+                salary : data.salary ? WageService.mapAPISalaryToSalary(data.salary) : null,
                 timeinAmBase : data.timein_am_base,
                 timeinPmBase : data.timein_pm_base,
                 timeoutAmBase : data.timeout_am_base,
                 timeoutPmBase : data.timeout_pm_base,
                 maximumOvertime : data.maximum_overtime,
-                mimimumOvertime : data.minimum_overtime,
+                minimumOvertime : data.minimum_overtime,
                 updatedAt : data.updated_at,
             };
         } catch (error) {
@@ -85,13 +84,13 @@ export const JobsService = {
                 id : data.job_id,
                 name : data.name,
                 description : data.description,
-                salary : WageService.mapAPISalaryToSalary(data.salary),
+                salary : data.salary ? WageService.mapAPISalaryToSalary(data.salary) : null,
                 timeinAmBase : data.timein_am_base,
                 timeinPmBase : data.timein_pm_base,
                 timeoutAmBase : data.timeout_am_base,
                 timeoutPmBase : data.timeout_pm_base,
                 maximumOvertime : data.maximum_overtime,
-                mimimumOvertime : data.minimum_overtime,
+                minimumOvertime : data.minimum_overtime,
                 updatedAt : data.updated_at,
             };
         } catch (error) {
@@ -105,13 +104,13 @@ export const JobsService = {
             const payload = {
                 name : jobData.name,
                 description : jobData.description,
-                salary_id : jobData.salary.id,
+                salary : jobData.salary?.id || null,
                 timein_am_base : jobData.timeinAmBase,
                 timein_pm_base : jobData.timeinPmBase,
                 timeout_am_base : jobData.timeoutAmBase,
                 timeout_pm_base : jobData.timeoutPmBase,
                 maximum_overtime : jobData.maximumOvertime,
-                minimum_overtime : jobData.mimimumOvertime,
+                minimum_overtime : jobData.minimumOvertime,
             };
             const response = await API.put<APIJobs>(`/employees/jobs/${jobId}/`, payload);
             const data = response.data;
@@ -119,13 +118,13 @@ export const JobsService = {
                 id : data.job_id,
                 name : data.name,
                 description : data.description,
-                salary : WageService.mapAPISalaryToSalary(data.salary),
+                salary : data.salary ? WageService.mapAPISalaryToSalary(data.salary) : null,
                 timeinAmBase : data.timein_am_base,
                 timeinPmBase : data.timein_pm_base,
                 timeoutAmBase : data.timeout_am_base,
                 timeoutPmBase : data.timeout_pm_base,
                 maximumOvertime : data.maximum_overtime,
-                mimimumOvertime : data.minimum_overtime,
+                minimumOvertime : data.minimum_overtime,
                 updatedAt : data.updated_at,
             };
         } catch (error) {
@@ -134,12 +133,13 @@ export const JobsService = {
         }
     },
 
-    async deleteJob(jobId: string) : Promise<void> {
+    async deleteJob(jobId: string) : Promise<boolean> {
         try {
             await API.delete(`/employees/jobs/${jobId}/`);
+            return true;
         } catch (error) {
             console.error("Error deleting job:", error);
-            throw error;
+            return false;
         }
     },
 };

@@ -11,6 +11,7 @@ interface PaginatedSectionProps<T> {
     emptyMessage: string;
     extraNode?: ReactNode;
     itemsPerPage?: number;
+    gridClassName?: string;
 }
 
 export default function PaginatedSection<T>({ 
@@ -20,7 +21,9 @@ export default function PaginatedSection<T>({
     renderItem, 
     emptyMessage, 
     extraNode = null,
-    itemsPerPage = 5
+    itemsPerPage = 5,
+    gridClassName = "space-y-4",
+
 }: PaginatedSectionProps<T>) {
     
     const [currentPage, setCurrentPage] = useState(1);
@@ -42,11 +45,11 @@ export default function PaginatedSection<T>({
             {items.length === 0 ? (
                 <p className="text-gray-500">{emptyMessage}</p>
             ) : (
-                <ul className="space-y-4">
+                <div className={gridClassName}>
                     {currentItems.map((item, index) => renderItem(item, index))}
                     {}
                     {extraNode && currentPage === totalPages && extraNode}
-                </ul>
+                </div>
             )}
 
             {}

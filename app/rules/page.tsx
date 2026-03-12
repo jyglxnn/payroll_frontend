@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Button from "../components/ui/Button"
 import PaginatedSection from "../components/Pagnation"
+import SearchInput from "../components/ui/SearchInput"
 import { WageService } from "@/services/wage_srv"
 import { Salary, Deduction, Penalty, Additional } from "@/api/types"
 import Loading from "../components/ui/Loading"
@@ -17,6 +18,7 @@ export default function RulesPage() {
     const [additionals, setAdditionals] = useState<Additional[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         const fetchRules = async () => {
@@ -52,11 +54,17 @@ export default function RulesPage() {
         return <div className="p-4 text-red-500">{error}</div>;
     }
 
+    const q = search.toLowerCase();
+    const filteredSalaries = salaries.filter(s => s.name.toLowerCase().includes(q) || s.description?.toLowerCase().includes(q));
+    const filteredDeductions = deductions.filter(d => d.name.toLowerCase().includes(q) || d.description?.toLowerCase().includes(q));
+    const filteredPenalties = penalties.filter(p => p.name.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q));
+    const filteredAdditionals = additionals.filter(a => a.name.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q));
+
     return (
         <div className="p-8 space-y-2">
             <div className="flex justify-between items-center gap-8">
                 <div>
-                    <p className="text-2xl uppercase font-black"> Rules Library </p>
+                    <p className="text-2xl uppercase font-black tracking-wide"> Rules Library </p>
                     <p> List of all available salary bases, deductions, penalties, and additional payments </p>
                 </div>
                 <Link href="/rules/new">
@@ -88,11 +96,17 @@ export default function RulesPage() {
                 ))}
             </div>
 
+            <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder={`Search ${activeTab} rules...`}
+            />
+
             <div className="mt-8">
                 {activeTab === 'salary' && (
                     <PaginatedSection 
                         title="Salary Bases"
-                        items={salaries}
+                        items={filteredSalaries}
                         itemsPerPage={5}
                         emptyMessage="No salary bases found."
                         renderItem={(salary: Salary, index: number) => (
@@ -130,7 +144,7 @@ export default function RulesPage() {
                 {activeTab === 'deduction' && (
                     <PaginatedSection 
                         title="Deductions"
-                        items={deductions}
+                        items={filteredDeductions}
                         itemsPerPage={5}
                         emptyMessage="No deduction found."
                         renderItem={(deduc: Deduction, index: number) => (
@@ -167,7 +181,7 @@ export default function RulesPage() {
                 {activeTab === "penalty" && (
                     <PaginatedSection 
                         title="Penalties"
-                        items={penalties}
+                        items={filteredPenalties}
                         itemsPerPage={5}
                         emptyMessage="No penalties found."
                         renderItem={(pena: Penalty, index: number) => (
@@ -204,7 +218,7 @@ export default function RulesPage() {
                 {activeTab === "additional" && (
                     <PaginatedSection 
                         title="Addittionals"
-                        items={additionals}
+                        items={filteredAdditionals}
                         itemsPerPage={5}
                         emptyMessage="No additionals found."
                         renderItem={(add: Additional, index: number) => (

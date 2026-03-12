@@ -7,6 +7,7 @@ import Button from "@/app/components/ui/Button"
 import { WageService } from "@/services/wage_srv"
 import { BaseLine, ReleaseType, Method, Rate } from "@/api/types"
 import toast from 'react-hot-toast';
+import { inputClasses } from "@/app/components/ui/styles";
 
 const ruleCategories = [
     { label: "Salary Base", value: "salary_base" },
@@ -135,9 +136,6 @@ export default function SalaryNewPage(){
     const isPenalty = selectedCategory === "penalty";
     const isAdditional = selectedCategory === "additional";
     
-    const inputClasses = "w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#03045e] disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:border-gray-200 transition-colors";
-
-
     return(
         <div className="space-y-4 md:px-16 py-8">
             <div className="flex justify-start w-full">
