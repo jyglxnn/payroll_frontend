@@ -13,7 +13,6 @@ import { Employee } from "@/api/types";
 export default function EmployeesPage() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState("");
     const [showInactive, setShowInactive] = useState(false);
 
@@ -25,7 +24,6 @@ export default function EmployeesPage() {
                 setEmployees(data);
             } catch (err) {
                 console.error("Failed to fetch employees:", err);
-                setError("Unable to load employees at this moment.");
             } finally {
                 setIsLoading(false);
             }
@@ -34,7 +32,6 @@ export default function EmployeesPage() {
     }, []);
 
     if (isLoading) return <Loading message="Loading employees..." />;
-    if (error) return <div className="p-4 text-red-500">{error}</div>;
 
     const q = search.toLowerCase();
     const filtered = employees

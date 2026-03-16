@@ -3,11 +3,11 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import {
-    Receipt,
+    ReceiptText,
     CheckCircle,
     Clock,
     TrendingUp,
-    DollarSign,
+    PhilippinePeso,
     History,
     CalendarDays,
     Users,
@@ -23,7 +23,6 @@ type Tab = "payslips" | "history";
 export default function PayrollPage() {
     const [payrolls, setPayrolls] = useState<PayrollItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | "released" | "pending">("all");
     const [tab, setTab] = useState<Tab>("payslips");
@@ -36,7 +35,6 @@ export default function PayrollPage() {
                 setPayrolls(data);
             } catch (err) {
                 console.error("Failed to fetch payrolls:", err);
-                setError("Unable to load payroll data.");
             } finally {
                 setIsLoading(false);
             }
@@ -72,7 +70,6 @@ export default function PayrollPage() {
     }, [payrolls]);
 
     if (isLoading) return <Loading message="Loading payroll records..." />;
-    if (error) return <div className="p-4 text-red-500">{error}</div>;
 
     const q = search.toLowerCase();
     const filtered = payrolls
@@ -106,13 +103,13 @@ export default function PayrollPage() {
 
     const stats = [
         { label: "Total Gross", value: `₱${totalGross.toLocaleString()}`, icon: TrendingUp, color: "text-blue-600", bg: "bg-blue-50" },
-        { label: "Total Net", value: `₱${totalNet.toLocaleString()}`, icon: DollarSign, color: "text-green-600", bg: "bg-green-50" },
+        { label: "Total Net", value: `₱${totalNet.toLocaleString()}`, icon: PhilippinePeso, color: "text-green-600", bg: "bg-green-50" },
         { label: "Released", value: releasedCount, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
         { label: "Pending", value: pendingCount, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
     ];
 
     const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-        { id: "payslips", label: "Payslips", icon: Receipt },
+        { id: "payslips", label: "Payslips", icon: ReceiptText },
         { id: "history", label: "History", icon: History },
     ];
 
@@ -201,7 +198,7 @@ export default function PayrollPage() {
                             >
                                 <div className="flex items-center gap-4 min-w-0 flex-1">
                                     <div className={`p-3 rounded-lg ${pay.isReleased ? "bg-green-100" : "bg-amber-100"}`}>
-                                        <Receipt className={`w-5 h-5 ${pay.isReleased ? "text-green-700" : "text-amber-700"}`} />
+                                        <ReceiptText className={`w-5 h-5 ${pay.isReleased ? "text-green-700" : "text-amber-700"}`} />
                                     </div>
                                     <div className="min-w-0">
                                         <h3 className="font-bold text-gray-900 truncate">{pay.employeeName}</h3>

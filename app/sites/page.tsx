@@ -53,8 +53,8 @@ export default function SitesPage(){
                     <p>Organize work locations and track ongoing project timelines.</p>
                 </div>
 
-                <div className="flex gap-4">
-                    <Button variant={showArchived ? "solid" : "outline"} className="px-8 gap-4" onClick={() => setShowArchived(!showArchived)}> <Layers /> {showArchived ? "Active" : "Archive"} </Button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <Button variant={showArchived ? "outline" : "outline"} className="px-8 gap-4" onClick={() => setShowArchived(!showArchived)}> <Layers /> <p className="hidden md:block">{showArchived ? "Active" : "Archive"} </p></Button>
                     <Link href="/sites/new">
                         <Button variant="solid" className="flex items-center gap-4 px-8"> <Plus /> <span className="hidden md:block">Register Site</span> </Button>
                     </Link>
